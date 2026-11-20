@@ -12,7 +12,7 @@
 :root{--bg:#f4f6f8;--card:#fff;--text:#1a1a1a;--muted:#888;--accent:#2563eb;--danger:#ef4444;--border:#e5e7eb;--chip:#e2e8f0;--priv:#7c3aed}
 [data-theme="dark"]{--bg:#121212;--card:#1e1e1e;--text:#f3f4f6;--muted:#6b7280;--accent:#3b82f6;--danger:#f87171;--border:#2e2e2e;--chip:#2a2a2a;--priv:#8b5cf6}
 *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);padding:14px;max-width:600px;margin:0 auto;padding-bottom:90px;transition:.2s}
+body{background:var(--bg);color:var(--text);padding:14px;max-width:600px;margin:0 auto;padding-bottom:60px;transition:.2s}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .title{display:flex;align-items:center;gap:8px}
 h1{font-size:21px}
@@ -39,8 +39,7 @@ ul{list-style:none;display:flex;flex-direction:column;gap:8px}
 li{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:8px;transition:.25s}
 .main{flex:1;cursor:pointer}
 .it-t{font-size:16px;font-weight:500;word-break:break-word}
-.it-m{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;align-items:center}
-.ptag{color:var(--accent);font-weight:700;cursor:pointer;background:var(--bg);padding:2px 6px;border-radius:6px}
+.it-m{font-size:11px;color:var(--muted);margin-top:2px}
 .qty{display:flex;align-items:center;gap:3px;background:var(--bg);padding:3px 5px;border-radius:10px;border:1px solid var(--border)}
 .qbtn{background:none;border:none;color:var(--accent);font-size:17px;font-weight:700;width:22px;cursor:pointer}
 .qval{font-size:12px;font-weight:700;min-width:34px;text-align:center;cursor:pointer}
@@ -48,8 +47,6 @@ li{background:var(--card);border:1px solid var(--border);border-radius:14px;padd
 li.bought{opacity:.42;filter:blur(.6px);background:transparent}
 li.bought .it-t{text-decoration:line-through;color:var(--muted)}
 .empty{text-align:center;color:var(--muted);margin-top:35px}
-.bbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:10px 16px;display:flex;justify-content:space-around;font-size:13px;max-width:600px;margin:0 auto}
-.bbar b{color:var(--accent);font-size:15px}
 .pbox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;margin-top:20px}
 .pinp{font-size:24px;letter-spacing:8px;text-align:center;width:150px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);margin:12px 0}
 .pbtn{background:var(--priv);color:#fff;border:none;padding:10px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
@@ -97,13 +94,8 @@ li.bought .it-t{text-decoration:line-through;color:var(--muted)}
   <div id="lCon"></div>
   <div class="empty" id="emp">Список порожній</div>
 </div>
-<div class="bbar" id="bBar" style="display:none">
-  <span>У кошику: <b id="sB">0 грн</b></span>
-  <span>Залишилось: <b id="sL">0 грн</b></span>
-  <span>Разом: <b id="sT">0 грн</b></span>
-</div>
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwQ30aN5QVGLiq7ykVkGcv7koxpZYQdddF281JDn4UgXOCT9eE2sl6LAiCKWAuWvJvJ-g/exec";
+const GAS_URL = "https://google.com";
 let fam = JSON.parse(localStorage.getItem('s_items') || '[]');
 let prv = JSON.parse(localStorage.getItem('s_prv') || '[]');
 let hist = JSON.parse(localStorage.getItem('s_hist') || '["Хліб","Молоко","Яйця","Масло","Вода","Сир"]');
@@ -127,7 +119,7 @@ function swTab(m){
   document.body.className = m==='private'?'priv-mode':'';
   document.getElementById('pinB').style.display = m==='private'?'inline':'none';
   if(m==='private' && pin && !unl){
-    document.getElementById('appB').style.display='none'; document.getElementById('bBar').style.display='none';
+    document.getElementById('appB').style.display='none';
     document.getElementById('pScr').style.display='block'; document.getElementById('pInp').value='';
   } else {
     document.getElementById('pScr').style.display='none'; document.getElementById('appB').style.display='block'; draw();
@@ -164,7 +156,7 @@ function drawChips(){
   const c = document.getElementById('chips'); c.innerHTML='';
   hist.forEach(h=>{
     const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent='+ '+h;
-    b.onclick=()=>{ vib(20); cur().unshift({id:Date.now()+Math.random(),t:h,q:1,u:'шт',p:0,cat:'📦 Інше',who:usr,b:false}); save(); };
+    b.onclick=()=>{ vib(20); cur().unshift({id:Date.now()+Math.random(),t:h,q:1,u:'шт',cat:'📦 Інше',who:usr,b:false}); save(); };
     c.appendChild(b);
   });
 }
@@ -173,7 +165,7 @@ function add(){
   const lines=el.value.split(/\r?\n/).map(s=>s.replace(/^[-*•\d.)]+\s*/,'').trim()).filter(Boolean);
   if(!lines.length) return; vib(25);
   lines.forEach((t,i)=>{
-    cur().unshift({id:Date.now()+i+Math.random(),t,q:1,u:'шт',p:0,cat,who:usr,b:false});
+    cur().unshift({id:Date.now()+i+Math.random(),t,q:1,u:'шт',cat,who:usr,b:false});
     if(mode==='family'){ hist=[t,...hist.filter(x=>x.toLowerCase()!==t.toLowerCase())].slice(0,12); localStorage.setItem('s_hist',JSON.stringify(hist)); drawChips(); }
   });
   el.value=''; save();
@@ -181,7 +173,6 @@ function add(){
 function tog(id){ vib(30); cur().forEach(x=>{if(x.id===id)x.b=!x.b;}); save(); }
 function chQ(id,d,e){ e.stopPropagation(); vib(15); cur().forEach(x=>{if(x.id===id&&(x.q+d)>=1)x.q+=d;}); save(); }
 function chU(id,e){ e.stopPropagation(); vib(15); const u=['шт','кг','г','л','уп']; cur().forEach(x=>{if(x.id===id)x.u=u[(u.indexOf(x.u)+1)%u.length];}); save(); }
-function setP(id,e){ e.stopPropagation(); const it=cur().find(x=>x.id===id), v=prompt(`Ціна за 1 ${it.u} (грн):`, it.p||''); if(v!==null){ const n=parseFloat(v.replace(',','.')); it.p=isNaN(n)||n<0?0:n; save(); } }
 function ed(id,e){ e.stopPropagation(); const it=cur().find(x=>x.id===id), nt=it&&prompt('Назва:',it.t); if(nt&&nt.trim()){it.t=nt.trim();save();} }
 function del(id,e){ e.stopPropagation(); vib(20); if(mode==='family') fam=fam.filter(x=>x.id!==id); else prv=prv.filter(x=>x.id!==id); save(); }
 function clrB(){ vib(30); if(mode==='family') fam=fam.filter(x=>!x.b); else prv=prv.filter(x=>!x.b); save(); }
@@ -191,14 +182,11 @@ function share(){
   navigator.share?navigator.share({text:txt}):(navigator.clipboard.writeText(txt),alert('Скопійовано!'));
 }
 function draw(){
-  const list=cur(), con=document.getElementById('lCon'), emp=document.getElementById('emp'), ctrl=document.getElementById('ctrl'), bar=document.getElementById('bBar');
+  const list=cur(), con=document.getElementById('lCon'), emp=document.getElementById('emp'), ctrl=document.getElementById('ctrl');
   con.innerHTML='';
-  if(!list.length){ emp.style.display='block'; ctrl.style.display='none'; bar.style.display='none'; return; }
+  if(!list.length){ emp.style.display='block'; ctrl.style.display='none'; return; }
   emp.style.display='none'; ctrl.style.display='flex';
   document.getElementById('cnt').textContent='Залишилось: '+list.filter(x=>!x.b).length;
-  let sb=0, sl=0; list.forEach(x=>{ const c=(x.p||0)*(x.q||1); if(x.b) sb+=c; else sl+=c; });
-  if(sb>0||sl>0){ bar.style.display='flex'; document.getElementById('sB').textContent=Math.round(sb)+' грн'; document.getElementById('sL').textContent=Math.round(sl)+' грн'; document.getElementById('sT').textContent=Math.round(sb+sl)+' грн'; }
-  else bar.style.display='none';
   const act=list.filter(x=>!x.b), bgt=list.filter(x=>x.b), cats=[...new Set(act.map(x=>x.cat||'📦 Інше'))];
   cats.forEach(c=>{
     const grp=act.filter(x=>(x.cat||'📦 Інше')===c);
@@ -209,8 +197,8 @@ function draw(){
 }
 function mkLi(x){
   const li=document.createElement('li'); if(x.b) li.className='bought';
-  const pt=x.p>0?`${Math.round(x.p*x.q)} грн`:'+ ціна', wt=(mode==='family'&&x.who)?`<span>👤 ${x.who}</span>`:'';
-  li.innerHTML=`<div class="main" onclick="tog(${x.id})"><div class="it-t">${x.t}</div><div class="it-m">${wt}<span class="ptag" onclick="setP(${x.id},event)">💰 ${pt}</span></div></div>
+  const wt=(mode==='family'&&x.who)?`<div class="it-m">👤 ${x.who}</div>`:'';
+  li.innerHTML=`<div class="main" onclick="tog(${x.id})"><div class="it-t">${x.t}</div>${wt}</div>
     <div class="qty"><button type="button" class="qbtn" onclick="chQ(${x.id},-1,event)">-</button><span class="qval" onclick="chU(${x.id},event)">${x.q} ${x.u}</span><button type="button" class="qbtn" onclick="chQ(${x.id},1,event)">+</button></div>
     <button type="button" class="sbtn" onclick="ed(${x.id},event)">✏️</button><button type="button" class="sbtn" onclick="del(${x.id},event)">✕</button>`;
   return li;
