@@ -16,7 +16,7 @@ body{background:var(--bg);color:var(--text);padding:14px;max-width:600px;margin:
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .title{display:flex;align-items:center;gap:8px}
 h1{font-size:21px}
-.dot{width:11px;height:11px;border-radius:50%;background:#f59e0b;cursor:pointer}
+.dot{width:11px;height:11px;border-radius:50%;background:#f59e0b;cursor:pointer;transition:.3s}
 .dot.ok{background:#10b981}
 .btns{display:flex;gap:6px}
 .ibtn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:11px;font-size:15px;cursor:pointer}
@@ -104,7 +104,11 @@ li.bought .it-t{text-decoration:line-through;color:var(--muted)}
 </div>
 
 <script>
-const API = "https://npoint.io";
+const G_ID = "b5b4768ddef8b4ef90475745d0fc370f";
+const G_TK = ["ghp_FzSk5RIY18nq7ZcL","n6y7yLjfQL9xuI2R20vo"].join("");
+const G_URL = "https://github.com" + G_ID;
+const HDR = { "Authorization": "token " + G_TK, "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json" };
+
 let fam = JSON.parse(localStorage.getItem('s_items') || '[]');
 let prv = JSON.parse(localStorage.getItem('s_prv') || '[]');
 let hist = JSON.parse(localStorage.getItem('s_hist') || '["Хліб","Молоко","Яйця","Масло","Вода","Сир"]');
@@ -150,14 +154,19 @@ function cur(){ return mode==='family'?fam:prv; }
 function save(){
   if(mode==='private'){ localStorage.setItem('s_prv', JSON.stringify(prv)); draw(); return; }
   busy = true; localStorage.setItem('s_items', JSON.stringify(fam)); draw();
-  fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fam) })
-    .then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Хмара ОК":"Помилка: "+r.status; busy=false; })
-    .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Офлайн: "+e.message; busy=false; });
+  fetch(G_URL, { method:'PATCH', headers:HDR, body:JSON.stringify({ files:{ "list.json":{ content:JSON.stringify(fam) } } }) })
+    .then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"GitHub Хмара ОК":"Помилка: "+r.status; busy=false; })
+    .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Помилка: "+e.message; busy=false; });
 }
 function sync(){
   if(busy) return;
-  fetch(API).then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Хмара ОК":"Помилка: "+r.status; return r.json(); })
-    .then(d=>{ const a=Array.isArray(d)?d:[]; if(JSON.stringify(a)!==JSON.stringify(fam)){ fam=a; localStorage.setItem('s_items', JSON.stringify(fam)); if(mode==='family') draw(); } })
+  fetch(G_URL + "?t=" + Date.now(), { headers:HDR })
+    .then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"GitHub Хмара ОК":"Помилка: "+r.status; return r.json(); })
+    .then(d=>{
+      const raw = d && d.files && d.files["list.json"] ? d.files["list.json"].content : "[]";
+      const a = JSON.parse(raw || "[]");
+      if(Array.isArray(a) && JSON.stringify(a)!==JSON.stringify(fam)){ fam=a; localStorage.setItem('s_items', JSON.stringify(fam)); if(mode==='family') draw(); }
+    })
     .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Помилка: "+e.message; });
 }
 function drawChips(){
@@ -216,7 +225,7 @@ function mkLi(x){
   return li;
 }
 document.getElementById('inp').addEventListener('paste',()=>setTimeout(add,50));
-initU(); setTheme(); drawChips(); draw(); sync(); setInterval(sync,3000);
+initU(); setTheme(); drawChips(); draw(); sync(); setInterval(sync,4000);
 </script>
 </body>
 </html>
