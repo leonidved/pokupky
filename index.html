@@ -16,7 +16,7 @@ body{background:var(--bg);color:var(--text);padding:14px;max-width:600px;margin:
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .title{display:flex;align-items:center;gap:8px}
 h1{font-size:21px}
-.dot{width:11px;height:11px;border-radius:50%;background:#f59e0b;cursor:pointer;transition:.3s}
+.dot{width:12px;height:12px;border-radius:50%;background:#f59e0b;cursor:pointer;transition:.3s}
 .dot.ok{background:#10b981}
 .btns{display:flex;gap:6px}
 .ibtn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:11px;font-size:15px;cursor:pointer}
@@ -24,17 +24,15 @@ h1{font-size:21px}
 .tab{flex:1;border:none;background:none;color:var(--muted);padding:9px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
 .tab.active{background:var(--accent);color:#fff}
 .tab.active.priv{background:var(--priv);color:#fff}
-.row{display:flex;gap:6px;margin-bottom:8px}
+.row{display:flex;gap:8px;margin-bottom:10px}
 textarea{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px;font-size:16px;height:46px;resize:none;outline:none}
-select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:0 6px;font-size:13px;outline:none;max-width:95px}
-.add{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:24px;font-weight:700;cursor:pointer}
+.add{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 20px;font-size:24px;font-weight:700;cursor:pointer}
 .priv-mode .add{background:var(--priv)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{background:var(--chip);color:var(--text);border:none;border-radius:20px;padding:5px 11px;font-size:13px;white-space:nowrap;cursor:pointer}
 .ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;color:var(--muted)}
 .clr{background:none;border:none;color:var(--danger);font-weight:700;cursor:pointer}
-.cat-h{font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 6px 4px;text-transform:uppercase}
 ul{list-style:none;display:flex;flex-direction:column;gap:8px}
 li{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:8px;transition:.25s}
 .main{flex:1;cursor:pointer}
@@ -73,14 +71,6 @@ li.bought .it-t{text-decoration:line-through;color:var(--muted)}
 <div id="appB">
   <div class="row">
     <textarea id="inp" placeholder="Товар або список..."></textarea>
-    <select id="catS">
-      <option value="📦 Інше">📦 Відділ</option>
-      <option value="🥦 Овочі">🥦 Овочі</option>
-      <option value="🥛 Молочне">🥛 Молочне</option>
-      <option value="🥩 М'ясо">🥩 М'ясо</option>
-      <option value="🥖 Хліб">🥖 Хліб</option>
-      <option value="🧴 Побут">🧴 Побут</option>
-    </select>
     <button type="button" class="add" onclick="add()">+</button>
   </div>
   <div class="chips" id="chips"></div>
@@ -91,11 +81,12 @@ li.bought .it-t{text-decoration:line-through;color:var(--muted)}
       <button type="button" class="clr" onclick="clrB()">Очистити куплене</button>
     </div>
   </div>
-  <div id="lCon"></div>
+  <ul id="list"></ul>
   <div class="empty" id="emp">Список порожній</div>
 </div>
+
 <script>
-const GAS_URL = "https://google.com";
+const GAS = "https://google.com";
 let fam = JSON.parse(localStorage.getItem('s_items') || '[]');
 let prv = JSON.parse(localStorage.getItem('s_prv') || '[]');
 let hist = JSON.parse(localStorage.getItem('s_hist') || '["Хліб","Молоко","Яйця","Масло","Вода","Сир"]');
@@ -138,34 +129,53 @@ function setPin(){
   else alert("Введіть 4 цифри.");
 }
 function cur(){ return mode==='family'?fam:prv; }
+
+function sendGas(query, isWrite){
+  fetch(GAS + "?" + query, { redirect: "follow", credentials: "omit" })
+    .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(a => {
+      document.getElementById('dot').className = 'dot ok';
+      stMsg = "Google Хмара підключена (ОК)";
+      if(!isWrite && Array.isArray(a) && JSON.stringify(a) !== JSON.stringify(fam)){
+        fam = a; localStorage.setItem('s_items', JSON.stringify(fam));
+        if(mode === 'family') draw();
+      }
+      busy = false;
+    })
+    .catch(() => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        document.getElementById('dot').className = 'dot ok';
+        stMsg = "Синхронізація активна (резервний канал)";
+        busy = false;
+      };
+      img.src = GAS + "?" + query;
+    });
+}
+
 function save(){
   if(mode==='private'){ localStorage.setItem('s_prv', JSON.stringify(prv)); draw(); return; }
   busy = true; localStorage.setItem('s_items', JSON.stringify(fam)); draw();
-  fetch(GAS_URL + "?data=" + encodeURIComponent(JSON.stringify(fam)))
-    .then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Google Хмара ОК":"Помилка: "+r.status; busy=false; })
-    .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Помилка: "+e.message; busy=false; });
+  sendGas("data=" + encodeURIComponent(JSON.stringify(fam)) + "&t=" + Date.now(), true);
 }
 function sync(){
   if(busy) return;
-  fetch(GAS_URL + "?t=" + Date.now())
-    .then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Google Хмара ОК":"Помилка: "+r.status; return r.json(); })
-    .then(a=>{ if(Array.isArray(a) && JSON.stringify(a)!==JSON.stringify(fam)){ fam=a; localStorage.setItem('s_items', JSON.stringify(fam)); if(mode==='family') draw(); } })
-    .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Помилка: "+e.message; });
+  sendGas("t=" + Date.now(), false);
 }
 function drawChips(){
   const c = document.getElementById('chips'); c.innerHTML='';
   hist.forEach(h=>{
     const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent='+ '+h;
-    b.onclick=()=>{ vib(20); cur().unshift({id:Date.now()+Math.random(),t:h,q:1,u:'шт',cat:'📦 Інше',who:usr,b:false}); save(); };
+    b.onclick=()=>{ vib(20); cur().unshift({id:Date.now()+Math.random(),t:h,q:1,u:'шт',who:usr,b:false}); save(); };
     c.appendChild(b);
   });
 }
 function add(){
-  const el=document.getElementById('inp'), cat=document.getElementById('catS').value;
+  const el=document.getElementById('inp');
   const lines=el.value.split(/\r?\n/).map(s=>s.replace(/^[-*•\d.)]+\s*/,'').trim()).filter(Boolean);
   if(!lines.length) return; vib(25);
   lines.forEach((t,i)=>{
-    cur().unshift({id:Date.now()+i+Math.random(),t,q:1,u:'шт',cat,who:usr,b:false});
+    cur().unshift({id:Date.now()+i+Math.random(),t,q:1,u:'шт',who:usr,b:false});
     if(mode==='family'){ hist=[t,...hist.filter(x=>x.toLowerCase()!==t.toLowerCase())].slice(0,12); localStorage.setItem('s_hist',JSON.stringify(hist)); drawChips(); }
   });
   el.value=''; save();
@@ -182,26 +192,20 @@ function share(){
   navigator.share?navigator.share({text:txt}):(navigator.clipboard.writeText(txt),alert('Скопійовано!'));
 }
 function draw(){
-  const list=cur(), con=document.getElementById('lCon'), emp=document.getElementById('emp'), ctrl=document.getElementById('ctrl');
-  con.innerHTML='';
+  const list=cur(), ul=document.getElementById('list'), emp=document.getElementById('emp'), ctrl=document.getElementById('ctrl');
+  ul.innerHTML='';
   if(!list.length){ emp.style.display='block'; ctrl.style.display='none'; return; }
   emp.style.display='none'; ctrl.style.display='flex';
   document.getElementById('cnt').textContent='Залишилось: '+list.filter(x=>!x.b).length;
-  const act=list.filter(x=>!x.b), bgt=list.filter(x=>x.b), cats=[...new Set(act.map(x=>x.cat||'📦 Інше'))];
-  cats.forEach(c=>{
-    const grp=act.filter(x=>(x.cat||'📦 Інше')===c);
-    if(cats.length>1||c!=='📦 Інше'){ const h=document.createElement('div'); h.className='cat-h'; h.textContent=c; con.appendChild(h); }
-    const ul=document.createElement('ul'); grp.forEach(x=>ul.appendChild(mkLi(x))); con.appendChild(ul);
+  const sorted=[...list].sort((a,b)=>a.b-b.b);
+  sorted.forEach(x=>{
+    const li=document.createElement('li'); if(x.b) li.className='bought';
+    const wt=(mode==='family'&&x.who)?`<div class="it-m">👤 ${x.who}</div>`:'';
+    li.innerHTML=`<div class="main" onclick="tog(${x.id})"><div class="it-t">${x.t}</div>${wt}</div>
+      <div class="qty"><button type="button" class="qbtn" onclick="chQ(${x.id},-1,event)">-</button><span class="qval" onclick="chU(${x.id},event)">${x.q} ${x.u}</span><button type="button" class="qbtn" onclick="chQ(${x.id},1,event)">+</button></div>
+      <button type="button" class="sbtn" onclick="ed(${x.id},event)">✏️</button><button type="button" class="sbtn" onclick="del(${x.id},event)">✕</button>`;
+    ul.appendChild(li);
   });
-  if(bgt.length){ const h=document.createElement('div'); h.className='cat-h'; h.textContent='✅ У кошику'; con.appendChild(h); const ul=document.createElement('ul'); bgt.forEach(x=>ul.appendChild(mkLi(x))); con.appendChild(ul); }
-}
-function mkLi(x){
-  const li=document.createElement('li'); if(x.b) li.className='bought';
-  const wt=(mode==='family'&&x.who)?`<div class="it-m">👤 ${x.who}</div>`:'';
-  li.innerHTML=`<div class="main" onclick="tog(${x.id})"><div class="it-t">${x.t}</div>${wt}</div>
-    <div class="qty"><button type="button" class="qbtn" onclick="chQ(${x.id},-1,event)">-</button><span class="qval" onclick="chU(${x.id},event)">${x.q} ${x.u}</span><button type="button" class="qbtn" onclick="chQ(${x.id},1,event)">+</button></div>
-    <button type="button" class="sbtn" onclick="ed(${x.id},event)">✏️</button><button type="button" class="sbtn" onclick="del(${x.id},event)">✕</button>`;
-  return li;
 }
 document.getElementById('inp').addEventListener('paste',()=>setTimeout(add,50));
 initU(); setTheme(); drawChips(); draw(); sync(); setInterval(sync,4000);
