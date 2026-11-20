@@ -174,10 +174,12 @@ function setPin(){
 function cur(){ return mode==='family'?fam:prv; }
 
 function sendGas(query, isWrite) {
-  fetch(GAS + "?" + query, {
+  function sendGas(query, isWrite) {
+  fetch(GAS + "?" + query + "&key=simya2026", {
     method: "GET",
     redirect: "follow"
   })
+
   .then(res => res.json())
   .then(a => {
     document.getElementById('dot').className = 'dot ok';
