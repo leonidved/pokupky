@@ -174,8 +174,7 @@ function setPin(){
 function cur(){ return mode==='family'?fam:prv; }
 
 function sendGas(query, isWrite) {
-  function sendGas(query, isWrite) {
-  fetch(GAS + "?" + query + "&key=simya2026", {
+  fetch(GAS + "?" + query, {
     method: "GET",
     redirect: "follow"
   })
