@@ -130,31 +130,28 @@ function setPin(){
 }
 function cur(){ return mode==='family'?fam:prv; }
 
-function sendGas(query, isWrite){
-  const cbName = "gasCb_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-  const s = document.createElement('script');
-  window[cbName] = function(a){
+function sendGas(query, isWrite) {
+  fetch(GAS + "?" + query, {
+    method: "GET",
+    redirect: "follow"
+  })
+  .then(res => res.json())
+  .then(a => {
     document.getElementById('dot').className = 'dot ok';
     stMsg = "Синхронізація активна (ОК)";
-    if(!isWrite && Array.isArray(a) && JSON.stringify(a) !== JSON.stringify(fam)){
-      fam = a; localStorage.setItem('s_items', JSON.stringify(fam));
-      if(mode === 'family') draw();
+    if (!isWrite && Array.isArray(a) && JSON.stringify(a) !== JSON.stringify(fam)) {
+      fam = a;
+      localStorage.setItem('s_items', JSON.stringify(fam));
+      if (mode === 'family') draw();
     }
     busy = false;
-    delete window[cbName];
-    s.remove();
-  };
-  s.onerror = function(){
+  })
+  .catch(err => {
     document.getElementById('dot').className = 'dot';
     stMsg = "Помилка з'єднання з Google";
     busy = false;
-    delete window[cbName];
-    s.remove();
-  };
-  s.src = GAS + "?" + query + "&callback=" + cbName;
-  document.body.appendChild(s);
+  });
 }
-
 function save(){
   if(mode==='private'){ localStorage.setItem('s_prv', JSON.stringify(prv)); draw(); return; }
   busy = true; localStorage.setItem('s_items', JSON.stringify(fam)); draw();
