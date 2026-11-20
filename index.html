@@ -122,6 +122,7 @@ function setTheme(){ document.documentElement.setAttribute('data-theme', theme);
 function tTheme(){ theme = theme==='light'?'dark':'light'; localStorage.setItem('s_theme', theme); setTheme(); }
 function swTab(m){
   vib(15); mode = m;
+  if(m !== 'private') unl = false;
   document.getElementById('tFam').className = m==='family'?'tab active':'tab';
   document.getElementById('tPriv').className = m==='private'?'tab active priv':'tab';
   document.body.className = m==='private'?'priv-mode':'';
