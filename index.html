@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2563eb">
+<title>Покупки</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><text x='50' y='68' font-size='56' text-anchor='middle'>🛒</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><text x='50' y='68' font-size='56' text-anchor='middle'>🛒</text></svg>">
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#1a1a1a;--muted:#888;--accent:#2563eb;--danger:#ef4444;--border:#e5e7eb;--chip:#e2e8f0;--priv:#7c3aed}
+[data-theme="dark"]{--bg:#121212;--card:#1e1e1e;--text:#f3f4f6;--muted:#6b7280;--accent:#3b82f6;--danger:#f87171;--border:#2e2e2e;--chip:#2a2a2a;--priv:#8b5cf6}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);padding:14px;max-width:600px;margin:0 auto;padding-bottom:95px;transition:.2s}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.title{display:flex;align-items:center;gap:8px}
+h1{font-size:21px}
+.dot{width:11px;height:11px;border-radius:50%;background:#f59e0b;cursor:pointer;transition:.3s}
+.dot.ok{background:#10b981}
+.btns{display:flex;gap:6px}
+.ibtn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:11px;font-size:16px;cursor:pointer}
+.user-badge{font-size:13px;font-weight:600;padding:7px 10px}
+
+.tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:4px;margin-bottom:12px;gap:4px}
+.tab{flex:1;border:none;background:none;color:var(--muted);padding:9px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}
+.tab.active{background:var(--accent);color:#fff}
+.tab.active.priv{background:var(--priv);color:#fff}
+
+.row{display:flex;gap:6px;margin-bottom:8px}
+textarea{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px;font-size:16px;height:46px;resize:none;outline:none}
+select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:0 8px;font-size:14px;outline:none;max-width:105px}
+.add{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:24px;font-weight:700;cursor:pointer}
+.priv-mode .add{background:var(--priv)}
+
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{background:var(--chip);color:var(--text);border:none;border-radius:20px;padding:5px 11px;font-size:13px;white-space:nowrap;cursor:pointer}
+
+.ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.clr{background:none;border:none;color:var(--danger);font-weight:700;cursor:pointer}
+
+.cat-header{font-size:13px;font-weight:700;color:var(--muted);margin:12px 0 6px 4px;text-transform:uppercase;letter-spacing:.5px}
+ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+li{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:8px;transition:.25s}
+.main{flex:1;cursor:pointer}
+.item-title{font-size:16px;font-weight:500;word-break:break-word;line-height:1.3}
+.item-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;align-items:center}
+.price-tag{color:var(--accent);font-weight:700;cursor:pointer;background:var(--bg);padding:2px 6px;border-radius:6px}
+
+.qty{display:flex;align-items:center;gap:3px;background:var(--bg);padding:3px 5px;border-radius:10px;border:1px solid var(--border)}
+.qbtn{background:none;border:none;color:var(--accent);font-size:17px;font-weight:700;width:22px;cursor:pointer}
+.qval{font-size:12px;font-weight:700;min-width:34px;text-align:center;cursor:pointer}
+.sbtn{background:none;border:none;color:var(--muted);font-size:15px;padding:5px;cursor:pointer}
+
+li.bought{opacity:.42;filter:blur(.6px);background:transparent}
+li.bought .item-title{text-decoration:line-through;color:var(--muted)}
+
+.empty{text-align:center;color:var(--muted);margin-top:35px;font-size:15px}
+.budget-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:10px 16px;display:flex;justify-content:space-around;font-size:13px;max-width:600px;margin:0 auto;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.budget-bar b{color:var(--accent);font-size:15px}
+
+/* Екран PIN-коду */
+.pin-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;margin-top:20px}
+.pin-box h3{margin-bottom:10px}
+.pin-box p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.pin-input{font-size:24px;letter-spacing:8px;text-align:center;width:150px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);margin-bottom:14px}
+.pin-btn{background:var(--priv);color:#fff;border:none;padding:10px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title"><h1>🛒 Покупки</h1><div class="dot" id="dot" onclick="alert(statusMsg)"></div></div>
+  <div class="btns">
+    <button type="button" class="ibtn user-badge" id="userBtn" onclick="changeUser()">👤 Я</button>
+    <button type="button" class="ibtn" onclick="share()">📤</button>
+    <button type="button" class="ibtn" id="tbtn" onclick="tTheme()">🌙</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button type="button" class="tab active" id="tabFam" onclick="switchTab('family')">👨‍👩‍👧‍👦 Сімейний</button>
+  <button type="button" class="tab" id="tabPriv" onclick="switchTab('private')">🔒 Моє (Особисте)</button>
+</div>
+
+<div id="pinScreen" style="display:none" class="pin-box">
+  <h3>🔒 Особистий розділ</h3>
+  <p id="pinDesc">Введіть 4-значний PIN-код для доступу</p>
+  <input type="password" inputmode="numeric" maxlength="4" id="pinInput" class="pin-input" placeholder="••••"><br>
+  <button type="button" class="pin-btn" onclick="submitPin()">Відкрити</button>
+</div>
+
+<div id="appBody">
+  <div class="row">
+    <textarea id="inp" placeholder="Товар або список..."></textarea>
+    <select id="catSel">
+      <option value="📦 Інше">📦 Відділ</option>
+      <option value="🥦 Овочі/Фрукти">🥦 Овочі</option>
+      <option value="🥛 Молочне">🥛 Молочне</option>
+      <option value="🥩 М'ясо/Риба">🥩 М'ясо</option>
+      <option value="🥖 Випічка">🥖 Хліб</option>
+      <option value="🧴 Побутове">🧴 Побут</option>
+    </select>
+    <button type="button" class="add" onclick="add()">+</button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="ctrl" id="ctrl" style="display:none">
+    <span id="cnt">Залишилось: 0</span>
+    <div>
+      <button type="button" class="clr" id="pinManageBtn" style="display:none;color:var(--priv);margin-right:10px" onclick="setupPin()">🔑 PIN-код</button>
+      <button type="button" class="clr" onclick="clrBought()">Очистити куплене</button>
+    </div>
+  </div>
+
+  <div id="listContainer"></div>
+  <div class="empty" id="emp">Список порожній</div>
+</div>
+
+<div class="budget-bar" id="budgetBar" style="display:none">
+  <span>У кошику: <b id="sumBought">0 грн</b></span>
+  <span>Залишилось: <b id="sumLeft">0 грн</b></span>
+  <span>Разом: <b id="sumTotal">0 грн</b></span>
+</div>
+
+<script>
+const API_LINK = "https://npoint.io";
+let famItems = JSON.parse(localStorage.getItem('s_items') || '[]');
+let privItems = JSON.parse(localStorage.getItem('s_priv_items') || '[]');
+let hist = JSON.parse(localStorage.getItem('s_hist') || '["Хліб","Молоко","Яйця","Масло","Вода","Сир"]');
+let theme = localStorage.getItem('s_theme') || 'light';
+let userName = localStorage.getItem('s_user') || '';
+let savedPin = localStorage.getItem('s_pin') || '';
+let mode = 'family'; // 'family' або 'private'
+let unlocked = false;
+let busy = false;
+let statusMsg = "Підключення...";
+
+function vibro(ms=25) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+function initUser() {
+  if (!userName) {
+    const names = ["Тато", "Дружина", "Син"];
+    const choice = prompt("Хто користується цим телефоном? (Наприклад: Тато, Дружина, Син)", "Тато");
+    userName = (choice && choice.trim()) ? choice.trim() : "Я";
+    localStorage.setItem('s_user', userName);
+  }
+  document.getElementById('userBtn').textContent = '👤 ' + userName;
+}
+
+function changeUser() {
+  const choice = prompt("Змінити ім'я автора покупок:", userName);
+  if (choice && choice.trim()) {
+    userName = choice.trim();
+    localStorage.setItem('s_user', userName);
+    document.getElementById('userBtn').textContent = '👤 ' + userName;
+  }
+}
+
+function setTheme() {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('tbtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+function tTheme() {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('s_theme', theme);
+  setTheme();
+}
+
+function switchTab(newMode) {
+  vibro(15);
+  mode = newMode;
+  document.getElementById('tabFam').className = mode === 'family' ? 'tab active' : 'tab';
+  document.getElementById('tabPriv').className = mode === 'private' ? 'tab active priv' : 'tab';
+  document.body.className = mode === 'private' ? 'priv-mode' : '';
+  document.getElementById('pinManageBtn').style.display = mode === 'private' ? 'inline' : 'none';
+
+  if (mode === 'private' && savedPin && !unlocked) {
