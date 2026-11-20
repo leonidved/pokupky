@@ -156,9 +156,9 @@ function save(){
 }
 function sync(){
   if(busy) return;
-  fetch(API+"?t="+Date.now()).then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Хмара ОК":"Помилка: "+r.status; return r.json(); })
+  fetch(API).then(r=>{ document.getElementById('dot').className=r.ok?'dot ok':'dot'; stMsg=r.ok?"Хмара ОК":"Помилка: "+r.status; return r.json(); })
     .then(d=>{ const a=Array.isArray(d)?d:[]; if(JSON.stringify(a)!==JSON.stringify(fam)){ fam=a; localStorage.setItem('s_items', JSON.stringify(fam)); if(mode==='family') draw(); } })
-    .catch(()=>document.getElementById('dot').className='dot');
+    .catch(e=>{ document.getElementById('dot').className='dot'; stMsg="Помилка: "+e.message; });
 }
 function drawChips(){
   const c = document.getElementById('chips'); c.innerHTML='';
