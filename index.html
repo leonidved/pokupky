@@ -131,26 +131,28 @@ function setPin(){
 function cur(){ return mode==='family'?fam:prv; }
 
 function sendGas(query, isWrite){
-  fetch(GAS + "?" + query, { redirect: "follow", credentials: "omit" })
-    .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(a => {
-      document.getElementById('dot').className = 'dot ok';
-      stMsg = "Google Хмара підключена (ОК)";
-      if(!isWrite && Array.isArray(a) && JSON.stringify(a) !== JSON.stringify(fam)){
-        fam = a; localStorage.setItem('s_items', JSON.stringify(fam));
-        if(mode === 'family') draw();
-      }
-      busy = false;
-    })
-    .catch(() => {
-      const img = new Image();
-      img.onload = img.onerror = () => {
-        document.getElementById('dot').className = 'dot ok';
-        stMsg = "Синхронізація активна (резервний канал)";
-        busy = false;
-      };
-      img.src = GAS + "?" + query;
-    });
+  const cbName = "gasCb_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+  const s = document.createElement('script');
+  window[cbName] = function(a){
+    document.getElementById('dot').className = 'dot ok';
+    stMsg = "Синхронізація активна (ОК)";
+    if(!isWrite && Array.isArray(a) && JSON.stringify(a) !== JSON.stringify(fam)){
+      fam = a; localStorage.setItem('s_items', JSON.stringify(fam));
+      if(mode === 'family') draw();
+    }
+    busy = false;
+    delete window[cbName];
+    s.remove();
+  };
+  s.onerror = function(){
+    document.getElementById('dot').className = 'dot';
+    stMsg = "Помилка з'єднання з Google";
+    busy = false;
+    delete window[cbName];
+    s.remove();
+  };
+  s.src = GAS + "?" + query + "&callback=" + cbName;
+  document.body.appendChild(s);
 }
 
 function save(){
