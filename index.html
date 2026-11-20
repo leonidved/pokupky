@@ -126,17 +126,42 @@ function swTab(m){
   document.getElementById('tPriv').className = m==='private'?'tab active priv':'tab';
   document.body.className = m==='private'?'priv-mode':'';
   document.getElementById('pinB').style.display = m==='private'?'inline':'none';
-  if(m==='private' && pin && !unl){
+  if(m==='private' && !unl){
     document.getElementById('appB').style.display='none';
-    document.getElementById('pScr').style.display='block'; document.getElementById('pInp').value='';
+    const scr = document.getElementById('pScr');
+    scr.style.display='block';
+    scr.querySelector('h3').textContent = pin ? '🔒 Введіть ваш PIN' : '🆕 Придумайте 4-значний PIN';
+    scr.querySelector('button').textContent = pin ? 'Відкрити' : 'Зберегти та увійти';
+    document.getElementById('pInp').value='';
+    document.getElementById('pInp').focus();
   } else {
-    document.getElementById('pScr').style.display='none'; document.getElementById('appB').style.display='block'; draw();
+    document.getElementById('pScr').style.display='none';
+    document.getElementById('appB').style.display='block';
+    draw();
   }
 }
+
 function chkPin(){
-  if(document.getElementById('pInp').value === pin){ unl = true; vib(30); swTab('private'); }
-  else { alert("Невірний PIN!"); document.getElementById('pInp').value=''; }
+  const val = document.getElementById('pInp').value.replace(/\D/g,'');
+  if(!pin){
+    if(val.length !== 4){ alert("Придумайте рівно 4 цифри!"); return; }
+    pin = val;
+    localStorage.setItem('s_pin', pin);
+    unl = true;
+    vib(30);
+    swTab('private');
+    return;
+  }
+  if(val === pin){
+    unl = true;
+    vib(30);
+    swTab('private');
+  } else {
+    alert("Невірний PIN!");
+    document.getElementById('pInp').value='';
+  }
 }
+
 function setPin(){
   const p = prompt("Новий 4-значний PIN (або порожньо, щоб вимкнути):", pin);
   if(p === null) return;
